@@ -2,27 +2,13 @@
 
 Smart Cutout is a public Codex skill for interactive foreground extraction. It helps an agent inspect an image, choose a cutout strategy, ask the user for choices when the target is ambiguous, and produce a verified transparent PNG.
 
-## Structure
+## Example
 
-```text
-smart-cutout/
-├── README.md
-├── assets/
-│   ├── cat-cutout-color-edge.png
-│   └── cat-original.jpg
-└── smart-cutout/
-    ├── SKILL.md
-    ├── agents/
-    │   └── openai.yaml
-    └── scripts/
-        ├── inspect_image.sh
-        ├── preview_background.swift
-        ├── refine_alpha.swift
-        ├── verify_alpha.sh
-        └── vision_cutout.swift
-```
+This example keeps the original canvas size and uses color-aware edge recovery to preserve more fine fur detail. The tradeoff is a slightly hazier edge because more semi-transparent source pixels are retained.
 
-`smart-cutout/SKILL.md` is the skill entrypoint. The scripts are small local tools used by the skill workflow.
+| Original | Transparent cutout |
+| --- | --- |
+| ![Original cat photo](assets/cat-original.jpg) | ![Cat cutout with transparent background](assets/cat-cutout-color-edge.png) |
 
 ## Installation
 
@@ -51,14 +37,6 @@ rm -rf "$tmpdir"
 ```
 
 The manual command replaces an existing `~/.codex/skills/smart-cutout` install.
-
-## Example
-
-This example keeps the original canvas size and uses color-aware edge recovery to preserve more fine fur detail. The tradeoff is a slightly hazier edge because more semi-transparent source pixels are retained.
-
-| Original | Transparent cutout |
-| --- | --- |
-| ![Original cat photo](assets/cat-original.jpg) | ![Cat cutout with transparent background](assets/cat-cutout-color-edge.png) |
 
 ## Requirements
 
