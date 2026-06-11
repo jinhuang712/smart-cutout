@@ -1,0 +1,4 @@
+interface:
+  display_name: "Smart Cutout"
+  short_description: "Interactive subject cutouts with alpha"
+  default_prompt: "Use $smart-cutout to isolate the subject from this image and save a transparent PNG."
