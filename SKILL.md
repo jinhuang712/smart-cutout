@@ -1,6 +1,7 @@
 ---
 name: smart-cutout
 description: Use when the user asks to remove an image background, cut out foreground subjects, make transparent PNG/WebP assets, extract objects from screenshots, create stickers, clean alpha edges, compare cutout options, or decide how to isolate a person, product, animal, object, or multiple subjects from an image.
+license: MIT
 ---
 
 # Smart Cutout
