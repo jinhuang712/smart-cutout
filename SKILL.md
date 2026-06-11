@@ -8,7 +8,7 @@ license: MIT
 
 ## Core Idea
 
-Be an interactive cutout operator, not a one-shot command runner. Inspect the image, explain uncertain choices briefly, offer options when the target or quality tradeoff is ambiguous, then run the smallest tool chain that can produce a verified transparent asset.
+Be an interactive cutout operator, not a one-shot command runner. Inspect the image, present a short recommended plan with 2-3 choices, wait for the user's selection, then run the smallest tool chain that can produce a verified transparent asset.
 
 ## Decision Flow
 
@@ -17,11 +17,10 @@ Be an interactive cutout operator, not a one-shot command runner. Inspect the im
    ```bash
    scripts/inspect_image.sh /path/to/image
    ```
-3. Decide whether to ask the user before processing.
-   - Ask when there are multiple plausible subjects.
-   - Ask when the image is a screenshot and the crop region is unclear.
-   - Ask when quality tradeoffs matter: keep all subjects vs largest subject, preserve fine hair/fur vs cleaner edges, output full crop vs trimmed sticker.
-   - Do not ask when the target and destination are obvious; proceed and report the assumptions.
+3. Ask for a processing choice before destructive or final processing, even when the subject seems obvious.
+   - Skip this only if the user explicitly says "directly process", "you decide", "no need to ask", or equivalent.
+   - Keep the question short and operational; do not turn it into a design review.
+   - Mark one recommended option based on the image inspection.
 4. Pick a route:
    - Plain photo, single subject: `vision_cutout.swift` then `refine_alpha.swift --trim`.
    - Screenshot/social app image: choose or estimate a crop, run `vision_cutout.swift --crop` or `--crop-frac`, then refine.
@@ -31,7 +30,11 @@ Be an interactive cutout operator, not a one-shot command runner. Inspect the im
    ```bash
    swift scripts/preview_background.swift --input out.png --output preview.png --color '#8CD2FF'
    ```
-6. Verify before saying it is done:
+6. Ask the user to judge the preview before finalizing whenever subjective quality is involved.
+   - Ask if there is visible hair/fur softness, halos, jagged edges, missing detail, background residue, or uncertain subject boundary.
+   - Present concrete refinement choices instead of saying only "looks good".
+   - If the user accepts the preview, keep the current final asset.
+7. Verify before saying it is done:
    ```bash
    scripts/verify_alpha.sh /path/to/final.png
    ```
@@ -51,7 +54,7 @@ For screenshots where another face/object overlaps the left edge, prefer `--left
 
 ## User Choice Patterns
 
-Use concise choices, usually 2-3 options:
+Use concise choices, usually 2-3 options. Ask before running the final cutout unless the user explicitly delegates the choice.
 
 - Target: "largest subject", "all visible subjects", or "specific region".
 - Screenshot handling: "crop to media area", "keep full screenshot subject only", or "tell me crop bounds".
@@ -60,10 +63,36 @@ Use concise choices, usually 2-3 options:
 
 If the user says "you decide", choose the conservative path: crop away UI first, keep the largest subject, trim transparent borders, and keep a temporary preview only for validation.
 
+Default prompt shape:
+
+```text
+I can process this in a few ways:
+1. Recommended: keep the main subject and trim to a sticker-style PNG.
+2. Keep the original canvas size with the background transparent.
+3. Make a faster first-pass cutout, then refine only if the preview has issues.
+
+Which do you want?
+```
+
+For screenshots, replace option 1 with "crop to the media/photo area first, then cut out the subject." For multiple plausible subjects, make the target choice explicit.
+
+Preview review prompt shape:
+
+```text
+I generated a preview. There is some edge softness/halo around the fur, which is subjective.
+1. Keep it as is.
+2. Refine the edge more aggressively, with some risk of losing fine hair/fur.
+3. Preserve more fine detail, accepting a little background residue.
+
+Which direction do you prefer?
+```
+
+Use this review prompt whenever the preview has毛边, halos, residue, or any quality issue that depends on user taste.
+
 ## Escalation
 
 Local Vision is the default. Consider a stronger model/API route only after local output visibly fails on fine hair/fur, translucent material, heavy overlap, or low contrast. Tell the user why and ask before using any network/API fallback.
 
 ## Completion Standard
 
-Final response must include the saved path and verification evidence (`hasAlpha: yes`). If any visual defect remains, state it plainly and offer the next refinement option.
+Final response must include the saved path and verification evidence (`hasAlpha: yes`). If any visual defect remains or the quality is subjective, state it plainly and mention the user-approved tradeoff.
