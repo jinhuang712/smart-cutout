@@ -55,6 +55,7 @@ For screenshots where another face/object overlaps the left edge, prefer `--left
 ## User Choice Patterns
 
 Use concise choices, usually 2-3 options. Ask before running the final cutout unless the user explicitly delegates the choice.
+Ask at most one pre-processing question by default, then ask one preview review question after generating a preview if quality is subjective. Do not ask the entire library.
 
 - Target: "largest subject", "all visible subjects", or "specific region".
 - Screenshot handling: "crop to media area", "keep full screenshot subject only", or "tell me crop bounds".
@@ -75,6 +76,52 @@ Which do you want?
 ```
 
 For screenshots, replace option 1 with "crop to the media/photo area first, then cut out the subject." For multiple plausible subjects, make the target choice explicit.
+
+Question library:
+
+Use exactly one of these before processing, choosing the one that resolves the most important uncertainty:
+
+```text
+This looks like a sticker/avatar use case. How should I output it?
+1. Recommended: trimmed sticker PNG with a little padding.
+2. Same canvas size with only the background transparent.
+3. Custom size or padding.
+```
+
+```text
+There may be multiple subjects. What should I keep?
+1. Recommended: the main/largest subject.
+2. All visible subjects.
+3. A specific region or object.
+```
+
+```text
+This is a screenshot. How should I handle the screenshot UI?
+1. Recommended: crop to the media/photo area first, then cut out the subject.
+2. Keep the full screenshot canvas and only remove background around the subject.
+3. You provide crop bounds or point me to the exact region.
+```
+
+```text
+This subject has fine hair/fur/soft edges. Which tradeoff do you prefer?
+1. Recommended: balanced edge cleanup.
+2. Cleaner edge, with some risk of losing fine detail.
+3. Preserve more detail, accepting a little background residue.
+```
+
+```text
+Should I preserve natural shadow?
+1. Recommended: remove shadow for a pure transparent asset.
+2. Preserve a light shadow for a more natural composite.
+3. Generate both for comparison.
+```
+
+```text
+Which preview background should I use to review the edge?
+1. Recommended: light blue.
+2. Dark background.
+3. Checkerboard-style/background-neutral preview if available.
+```
 
 Preview review prompt shape:
 
