@@ -12,3 +12,7 @@ dist/
 !assets/**/*.jpg
 !assets/**/*.jpeg
 !assets/**/*.webp
+!*/assets/**/*.png
+!*/assets/**/*.jpg
+!*/assets/**/*.jpeg
+!*/assets/**/*.webp

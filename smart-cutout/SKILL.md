@@ -18,6 +18,7 @@ Be an interactive cutout operator, not a one-shot command runner. Inspect the im
    scripts/inspect_image.sh /path/to/image
    ```
 3. Ask for a processing choice before destructive or final processing, even when the subject seems obvious.
+   - Prefer `request_user_input` whenever it is available in the current mode/tool list; use plain text choices only when the tool is unavailable.
    - Skip this only if the user explicitly says "directly process", "you decide", "no need to ask", or equivalent.
    - Keep the question short and operational; do not turn it into a design review.
    - Mark one recommended option based on the image inspection.
@@ -25,6 +26,8 @@ Be an interactive cutout operator, not a one-shot command runner. Inspect the im
    - Plain photo, single subject: `vision_cutout.swift` then `refine_alpha.swift --trim`.
    - Screenshot/social app image: choose or estimate a crop, run `vision_cutout.swift --crop` or `--crop-frac`, then refine.
    - Multiple desired subjects: add `--all-instances`.
+   - Fine hair/fur where the user prefers detail: run `refine_alpha.swift --source original --recover-soft-edge 2` before previewing.
+   - Fine hair/fur where the user wants stronger detail recovery: use `--recover-color-edge` with a source image, then preview for background haze.
    - Edge/UI remnants after visual check: run `refine_alpha.swift` with localized cleanup such as `--left-clear` or `--left-curve-clear`.
 5. Generate a preview on a colored background when transparent edges are hard to judge:
    ```bash
@@ -44,7 +47,7 @@ Be an interactive cutout operator, not a one-shot command runner. Inspect the im
 
 - `scripts/inspect_image.sh`: metadata check using `file` and `sips`.
 - `scripts/vision_cutout.swift`: macOS Vision foreground instance mask; supports crop, fractional crop, and all-instance mode.
-- `scripts/refine_alpha.swift`: trims transparent borders and applies small localized alpha cleanup.
+- `scripts/refine_alpha.swift`: trims transparent borders, applies small localized alpha cleanup, and can recover soft hair/fur edges from the source image.
 - `scripts/preview_background.swift`: composites transparent PNG onto a solid color for edge review.
 - `scripts/verify_alpha.sh`: fails unless the output has alpha.
 
@@ -56,6 +59,14 @@ For screenshots where another face/object overlaps the left edge, prefer `--left
 
 Use concise choices, usually 2-3 options. Ask before running the final cutout unless the user explicitly delegates the choice.
 Ask at most one pre-processing question by default, then ask one preview review question after generating a preview if quality is subjective. Do not ask the entire library.
+When asking, use `request_user_input` first if it is available in the current session. Fall back to the same options as plain text only when the tool is unavailable or the current mode cannot call it.
+
+For `request_user_input`:
+
+- Ask 1 question at a time; use at most 3 choices.
+- Put the recommended option first and suffix its label with "(Recommended)".
+- Keep `header` short, use `snake_case` ids, and do not add an "Other" choice because the client provides it.
+- Use it for both the initial processing choice and subjective preview review when those questions are needed.
 
 - Target: "largest subject", "all visible subjects", or "specific region".
 - Screenshot handling: "crop to media area", "keep full screenshot subject only", or "tell me crop bounds".
